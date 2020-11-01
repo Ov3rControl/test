@@ -5,12 +5,23 @@ const { TextArea } = Input;
 
 interface IProps {
   repos: IRepo[];
-  onChange: () => void;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>, name: string) => void;
   logout: () => void;
+  saveComment: () => void;
+  comments: () => string;
 }
 
 const HomeView: React.FC<IProps> = React.memo(
-  ({ repos, onChange, logout }): JSX.Element => {
+  ({ repos, onChange, logout, saveComment, comments }): JSX.Element => {
+    const [comment, setComment] = React.useState<{
+      name: string;
+      body: string;
+    }>();
+
+    React.useEffect(() => {
+      const data = localStorage.getItem("comments");
+      setComment(JSON.parse(data));
+    }, [saveComment]);
     return (
       <>
         <Button style={logoutBtn} onClick={logout} type="primary" danger>
@@ -29,12 +40,16 @@ const HomeView: React.FC<IProps> = React.memo(
                   description={item.full_name}
                 />
               </List.Item>
+              {console.log(comment)}
+              {comment.name === item.name && <p>{comment.body}</p>}
               <TextArea
-                placeholder="textarea with clear icon"
+                placeholder="Comment"
                 allowClear
-                onChange={onChange}
+                onChange={(e) => onChange(e, item.name)}
               />
-              <Button type="primary">Save</Button>
+              <Button onClick={() => saveComment()} type="primary">
+                Save
+              </Button>
             </>
           )}
         />

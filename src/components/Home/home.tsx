@@ -6,7 +6,12 @@ import { useHistory } from "react-router-dom";
 
 const Home: React.FC = (): JSX.Element => {
   const [data, setData] = React.useState<IRepo[]>();
+  const [comments, setComments] = React.useState<{
+    name: string;
+    body: string;
+  }>();
   const history = useHistory();
+
   React.useEffect(() => {
     api
       .getData()
@@ -15,11 +20,22 @@ const Home: React.FC = (): JSX.Element => {
           .getData(response.data.repos_url)
           .then((response) => setData(response.data))
       );
-    // return () => {
-    //   cleanup
-    // }
   }, []);
-  const onChange = () => {};
+
+  const onChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>, name: string) => {
+      setComments({ ...comments, name, body: e.target.value });
+    },
+    []
+  );
+  const saveComment = React.useCallback(() => {
+    const commentsData = JSON.stringify(comments);
+    localStorage.setItem("comments", commentsData);
+  }, [comments]);
+
+  const loadComments = () => {
+    return localStorage.getItem("comments");
+  };
 
   const logout = () => {
     localStorage.clear();
@@ -28,7 +44,13 @@ const Home: React.FC = (): JSX.Element => {
 
   return (
     <div>
-      <HomeView logout={logout} onChange={onChange} repos={data} />
+      <HomeView
+        saveComment={saveComment}
+        logout={logout}
+        onChange={onChange}
+        repos={data}
+        comments={loadComments}
+      />
     </div>
   );
 };
